@@ -1,0 +1,18 @@
+[package]
+name = "vmux_gui"
+version = "0.1.0"
+edition = "2021"
+workspace = ".."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+vmux_ftp = { path = "../vmux_ftp" }
+vmux_lib = { path = "../vmux_lib" }
+tempfile = "3.3.0"
+eframe = { git = "https://github.com/emilk/egui", rev = "d76d055d49e99c4c5f4c85ee6ab19b92e14951f6" } 
+bluray_support = { path = "../bluray_support" }#egui = "0.18.1"
+#eframe = { version = "0.18.0"  }
+#egui = { git = "https://github.com/emilk/egui", rev = "d76d055d49e99c4c5f4c85ee6ab19b92e14951f6" } 
+#egui = "*"
+#egui_docking = { git = "https://github.com/lain-dono/egui_docking", rev = "e48dc8648dbecf7053bfe95f4b0384acf2bf4e04" } 

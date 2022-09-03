@@ -1,0 +1,15 @@
+[package]
+name = "vmux_main"
+version = "0.1.0"
+edition = "2021"
+workspace = ".."
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+vmux_lib = { path = "../vmux_lib" }
+#fuse = { git = "https://github.com/zargony/fuse-rs.git", rev = "39fde4a5c47ce370d228ac190f950bd835db7f47"}
+fuse = { git = "https://github.com/delehef/fuse-rs.git", rev = "f9e41e8078bde7a9f8e16eb2413bbabb562fc706" }
+libc = "*"
+wav = "1.0.0"
+simple-error = "*"
+#env_logger = "*"

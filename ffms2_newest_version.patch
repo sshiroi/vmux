@@ -1,0 +1,25 @@
+diff --git a/src/frame.rs b/src/frame.rs
+index d5dab3e..10bbd17 100644
+--- a/src/frame.rs
++++ b/src/frame.rs
+@@ -92,7 +92,9 @@ create_struct!(
+         MasteringDisplayMaxLuminance,
+         HasContentLightLevel,
+         ContentLightLevelMax,
+-        ContentLightLevelAverage
++        ContentLightLevelAverage,
++        DolbyVisionRPU,
++        DolbyVisionRPUSize
+     ),
+     (
+         [ptr::null(); 4],
+@@ -123,7 +125,8 @@ create_struct!(
+         0.0,
+         0,
+         0,
+-        0
++        0,
++        ptr::null_mut(),0
+     )
+ );
+ 

@@ -1,0 +1,8 @@
+target/
+cfg_data/
+fuse/
+__pycache__/
+tmp/
+ffms2_patched/
+vendor/
+ipagp.ttf
