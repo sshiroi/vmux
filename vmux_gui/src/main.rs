@@ -8,6 +8,7 @@ use gui_common::*;
 use vmux_lib::handling::Config;
 mod egui_docking;
 mod gui_impl;
+mod mpv_raw;
 
 fn main() {
     let mut native_options = eframe::NativeOptions::default();

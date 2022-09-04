@@ -14,9 +14,6 @@ use vmux_lib::handling::SingularRemuxMatroskaFile;
 use vmux_lib::matroska_hellofs::flatten_remux_folder_entries;
 use vmux_lib::ClipRecut;
 
-use crate::egui;
-use crate::GuiGlobalState;
-
 fn build_edl_full<A: AsRef<Path>>(
     tmpd: A,
     tif: &TitleInfo,
@@ -78,14 +75,15 @@ fn build_edl_ex<A: AsRef<Path>>(
     let mut edl = String::new();
     edl += "# mpv EDL v0\n";
     edl += &format!("!track_meta,title={}\n", title);
-    // edl += "!no_chapters\n";
+    edl += "!no_chapters\n";
 
     let start = a;
     let end = b;
 
     let chapter_dir = tmpd.as_ref().join("chapters");
-    std::fs::create_dir_all(&chapter_dir).unwrap();
-
+    if chapter_seperate {
+        std::fs::create_dir_all(&chapter_dir).unwrap();
+    }
     for c in &tif.clips {
         let duation = c.out_time - c.in_time;
         if c.start_time + duation <= start {
@@ -303,77 +301,6 @@ pub fn handle(
     return None;
 }
 
-pub fn gui_mpv_raw(ui: &mut egui::Ui, asd: &mut GuiGlobalState) {
-    let _ = ui;
-    let _ = asd;
-    /*
-    egui::ScrollArea::vertical()
-        .id_source("mpv_unindexed")
-        .show(ui, |ui| {
-            let smen = asd.mpv_raw.is_some();
-            ui.label(format!("status: {}", smen));
-
-            ui.label("Save location");
-            ui.text_edit_singleline(&mut asd.vmux_config.mpvraw_exportlocation);
-            ui.separator();
-            if smen {
-                if ui.button("Close").clicked() {
-                    asd.mpv_raw = None;
-                }
-            }
-            if let Some(folders) = &asd.mpv_raw {
-                if ui.text_edit_singleline(&mut asd.mpv_raw_search).clicked() {}
-
-                for f in &folders.clone() {
-                    if !f.show{
-                        continue;
-                    }
-                    if asd.mpv_raw_search != "" {
-                        if !f.name
-                            .to_lowercase()
-                            .contains(&(asd.mpv_raw_search.to_owned().to_lowercase()))
-                        {
-                            continue;
-                        }
-                    }
-
-                    ui.horizontal(|ui| {
-                        if ui.button("Export").clicked() {
-                            export_folder_as_ebl(&asd.vmux_config,f,&mut asd.bdsc,asd.edl_fix_offset);
-                        }
-                        ui.collapsing(&f.name, |ui| {
-                            for f2 in &f.entries {
-                                match f2 {
-                                    vmux_lib::handling::RemuxFolderEntrie::SingularFile(sglr) => {
-                                        if ui.button(format!("{}{}", &f.file_prefix, sglr.name)).clicked() {
-                                            handle( &asd.vmux_config, &mut asd.bdsc, sglr,&f.file_prefix,true,false,asd.edl_fix_offset);
-                                        }
-                                    },
-                                    vmux_lib::handling::RemuxFolderEntrie::MultipleFileTitleClipSplit(_) => unreachable!(),
-                                }
-                            }
-                        });
-                    });
-                }
-            }else {
-                if ui.button("Setup").clicked() {
-                    let mut vc = asd.vmux_config.folders.clone();
-                    for f in &mut vc {
-                        if !f.show { continue;}
-                        sort_and_flatten(&asd.vmux_config,f,&mut asd.bdsc);
-                    }
-                    vc.sort_by(|a,b| a.file_prefix.partial_cmp(&b.file_prefix).unwrap());
-
-
-                    asd.mpv_raw = Some(vc);
-                }
-            }
-
-
-        });
-        */
-}
-
 //pub const USE_SYMLINKS: bool = false;
 
 pub(crate) fn export_folder_as_ebl(
@@ -388,8 +315,14 @@ pub(crate) fn export_folder_as_ebl(
     if pb.exists() {
         let target_dir = pb.join(format!("{}", &f.name));
         if target_dir.exists() {
-            std::fs::remove_dir_all(&target_dir).unwrap();
-            std::fs::create_dir_all(&target_dir).unwrap();
+            for a in std::fs::read_dir(&target_dir).unwrap() {
+                if let Ok(e) = a {
+                    let ftype = e.file_name();
+                    if ftype.to_str().unwrap().ends_with(".edl") {
+                        std::fs::remove_file(e.path()).unwrap();
+                    }
+                }
+            }
         } else {
             std::fs::create_dir_all(&target_dir).unwrap();
         }
@@ -472,138 +405,3 @@ fn hexify_string(a: &str) -> String {
     }
     stra
 }
-
-/*
-old code
-    let mut nfo = Vec::new();
-    for c in &tif.clips {
-        let asdd = process_clipp(&bd.bd,*f,c,blr);
-        nfo.push(asdd);
-    }
-
-    let mut stras = Vec::new();
-
-    stras.push(format!("mpv"));
-    for f in &nfo {
-        stras.push(format!("--{{"));
-        stras.push(format!("{}",f.0.display().to_string()));
-        stras.push(format!("--chapters-file={}",f.1.display().to_string()));
-        stras.push(format!("--}}"));
-    }
-    let nfos: Vec<TempDir> = nfo.into_iter().map(|e| e.2).collect();
-
-    std::thread::spawn(move || {
-        //important code we dont want the tempdir destroyed
-        let dd = nfos;
-        let _ = dd.len();
-
-        std::process::Command::new("mpv")
-            .args(
-                stras
-            )
-            .output()
-            .expect("failed to execute process");
-    });
-}
-
-
-
-
-
-fn process_clipp(bd: &BD, title_idx: u64, cipp: &Clip, blr: &Bdrom) -> (PathBuf, PathBuf, TempDir) {
-    let clip_id = cipp.clip_id_as_str();
-    let chapters = gen_chaps_for_title(
-        &bd,
-        title_idx as u32,
-        vmux_lib::ClipRecut {
-            offset: cipp.start_time,
-            duration: Some(cipp.out_time - cipp.in_time),
-        },
-    );
-    let dir = tempfile::tempdir().unwrap();
-    std::fs::create_dir_all(&dir).unwrap();
-
-    let file_path = dir.path().join(format!("asd{}.ffmetadata", clip_id));
-    dbg!(&file_path);
-    let _ = std::fs::write(&file_path, chapters).unwrap();
-
-    let clip_path_onfs = get_clip_path(&clip_id, blr);
-
-    (clip_path_onfs, file_path, dir)
-}
-
-
-fn build_edl_full<A: AsRef<Path>>(tmpd: A,tif: &TitleInfo,blr: &Bdrom,title: &str) -> String{
-    let mut edl = String::new();
-    edl += "# mpv EDL v0\n";
-    edl += format!("!track_meta,title={}\n",title);
-    edl += "!no_chapters\n";
-
-
-    let chapter_dir = tmpd.as_ref().join("chapters");
-    std::fs::create_dir_all(&chapter_dir).unwrap();
-
-    for c in &tif.clips {
-        let clip_id = c.clip_id_as_str();
-        let clip_path_onfs = get_clip_path(&clip_id,blr);
-        let iuiui = clip_path_onfs.display().to_string();
-        //let aa = find_infooo(iuiui);
-        //For some we can use normal in_times here
-        let edl_start = c.in_time as f32 / 90_000.0;
-        let edl_end   = c.out_time as f32 / 90_000.0;
-
-        let edl_length = edl_end - edl_start;
-
-        let chpts = gen_chaps_for_title_ti(&tif, ClipRecut {
-            offset: c.start_time,
-            duration: Some(c.out_time-c.in_time),
-        });
-        let chapter_file = chapter_dir.join(format!("{}_t{}.ffmetadata",blr.internal_id,tif.idx));
-        let _ = std::fs::write(&chapter_file,&chpts).unwrap();
-
-
-        edl += &format!("{}",&iuiui);
-        edl += ",";
-        edl += &format!("{}",edl_start);
-        edl += ",";
-        edl += &format!("{}",edl_length);
-        edl += "\n";
-        edl += "!new_stream\n";
-        edl += &format!("{}\n",chapter_file.display().to_string());
-    }
-    return edl;
-}
-
-
-
-fn find_infooo(media_file: &str) -> (u64, f64) {
-    let outpt = std::process::Command::new("ffprobe")
-        .args([
-            format!("{}", media_file),
-            format!("-v"),
-            format!("error"),
-            format!("-show_format"),
-            format!("-show_streams"),
-        ])
-        .output()
-        .expect("failed to execute process");
-    let asd = String::from_utf8(outpt.stdout).unwrap();
-
-    let bf = BufReader::new(Cursor::new(asd));
-    let mut pts = 0u64;
-    let mut start = 0.0;
-    for l in bf.lines() {
-        let l = l.unwrap();
-        if l.contains("start_pts=") {
-            let aa: Vec<&str> = l.split("=").collect();
-            pts = aa[1].parse().unwrap();
-        }
-        if l.contains("start_time=") {
-            let aa: Vec<&str> = l.split("=").collect();
-            start = aa[1].parse().unwrap();
-        }
-    }
-
-    (pts, start)
-}
-*/

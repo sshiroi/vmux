@@ -199,14 +199,12 @@ pub struct EguiApp {
 impl EguiApp {
     pub fn new(cfg: Config) -> Self {
         use egui_docking::NodeIndex;
-        let _ = PlaceholderTab::MpvRaw;
         //let _ = PlaceholderTab::Errors;
         let mut egtre = egui_docking::Tree::new(vec![
             Box::new(PlaceholderTab::Inspect),
             //          Box::new(PlaceholderTab::Errors),
             //        Box::new(PlaceholderTab::Index),
             Box::new(PlaceholderTab::Ftp),
-            //    Box::new(PlaceholderTab::MpvRaw),
             Box::new(PlaceholderTab::Clips),
             Box::new(PlaceholderTab::Import),
             Box::new(PlaceholderTab::Config),
@@ -415,7 +413,6 @@ fn collect_bdrom_src(es: &[RemuxFolderEntrie]) -> Vec<String> {
 pub enum PlaceholderTab {
     // Errors,
     Ftp,
-    MpvRaw,
     //   Index,
     Clips,
     Bdvms,
@@ -432,7 +429,6 @@ impl egui_docking::Tab<EguiAppState> for PlaceholderTab {
         match self {
             //PlaceholderTab::Errors => "Errors",
             //        PlaceholderTab::Index => "Index",
-            PlaceholderTab::MpvRaw => "MpvRaw",
             PlaceholderTab::Ftp => "Ftp",
             PlaceholderTab::Clips => "BdStreams", //TODO: also change clips everywhere to BdStreams
             PlaceholderTab::Bdvms => "Bdmvs",
@@ -463,8 +459,6 @@ impl egui_docking::Tab<EguiAppState> for PlaceholderTab {
                 PlaceholderTab::Bdvms => crate::gui_impl::gui_bdmvs(ui, &mut ctx.global),
 
                 PlaceholderTab::Ftp => crate::gui_impl::gui_ftp(ui, &mut ctx.global),
-
-                PlaceholderTab::MpvRaw => crate::gui_impl::gui_mpv_raw(ui, &mut ctx.global),
 
                 PlaceholderTab::Folders => crate::gui_impl::gui_bd_folders(ui, &mut ctx.global),
 

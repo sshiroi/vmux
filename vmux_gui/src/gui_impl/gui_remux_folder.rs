@@ -260,7 +260,7 @@ pub fn gui_remux_folder(ui: &mut egui::Ui, asd: &mut crate::GuiGlobalState) {
                                 || vmux_config_change)
                         {
                             // drop(folder);
-                            super::mpv_raw::sort_and_flatten(
+                            crate::mpv_raw::sort_and_flatten(
                                 &asd.vmux_config,
                                 &mut folder_cpy,
                                 &mut asd.bdsc,
@@ -292,7 +292,7 @@ pub fn gui_remux_folder(ui: &mut egui::Ui, asd: &mut crate::GuiGlobalState) {
                         ui.heading("Resulting files");
                         if error_free {
                             if ui.button("Export EDL").clicked() {
-                                super::mpv_raw::export_folder_as_ebl(
+                                crate::mpv_raw::export_folder_as_ebl(
                                     &asd.vmux_config,
                                     e,
                                     &mut asd.bdsc,
@@ -311,7 +311,7 @@ pub fn gui_remux_folder(ui: &mut egui::Ui, asd: &mut crate::GuiGlobalState) {
                                     ui.label(format!("{}{}", e.file_prefix, sf.name));
                                     if error_free {
                                         if ui.button("Watch").clicked() {
-                                            super::mpv_raw::handle(
+                                            crate::mpv_raw::handle(
                                                 &asd.vmux_config,
                                                 &mut asd.bdsc,
                                                 sf,

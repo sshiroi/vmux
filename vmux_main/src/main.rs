@@ -15,7 +15,6 @@ use vmux_lib::bd_cache::BDsCache;
 use vmux_lib::handling::Config;
 use vmux_lib::*;
 
-
 fn main() -> Result<(), Box<dyn Error>> {
     let mut args = vmux_lib::CmdLineArgs::new();
     let allow_other = args.has_key("allow_other");
