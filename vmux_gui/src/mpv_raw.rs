@@ -14,6 +14,10 @@ use vmux_lib::handling::SingularRemuxMatroskaFile;
 use vmux_lib::matroska_hellofs::flatten_remux_folder_entries;
 use vmux_lib::ClipRecut;
 
+fn mpv_edl_escape(a: &str) -> String {
+    format!("%{}%{}", a.len(), a)
+}
+
 fn build_edl_full<A: AsRef<Path>>(
     tmpd: A,
     tif: &TitleInfo,
@@ -74,7 +78,7 @@ fn build_edl_ex<A: AsRef<Path>>(
 ) -> String {
     let mut edl = String::new();
     edl += "# mpv EDL v0\n";
-    edl += &format!("!track_meta,title={}\n", title);
+    edl += &format!("!track_meta,title={}\n", mpv_edl_escape(title));
     edl += "!no_chapters\n";
 
     let start = a;
@@ -95,7 +99,7 @@ fn build_edl_ex<A: AsRef<Path>>(
         let clip_id = c.clip_id_as_str();
         let clip_path_onfs = get_clip_path(&clip_id, blr);
 
-        let iuiui = if bdmv_relative {
+        let stream_path = if bdmv_relative {
             let raww = clip_path_onfs
                 .strip_prefix(&PathBuf::from(&blr.path))
                 .unwrap();
@@ -116,7 +120,7 @@ fn build_edl_ex<A: AsRef<Path>>(
 
         let edl_length = edl_end - edl_start;
 
-        edl += &format!("{}", &iuiui);
+        edl += &format!("{}", mpv_edl_escape(&stream_path));
         edl += ",";
         edl += &format!("{}", (edl_start as f64 + edl_fix_offset).max(0.0)); //no idea why this needs to be here
         edl += ",";
@@ -143,11 +147,13 @@ fn build_edl_ex<A: AsRef<Path>>(
             edl += "!new_stream\n";
             edl += &format!(
                 "{},title=\n",
-                chapter_file
-                    .strip_prefix(tmpd.as_ref())
-                    .unwrap()
-                    .display()
-                    .to_string()
+                mpv_edl_escape(
+                    &chapter_file
+                        .strip_prefix(tmpd.as_ref())
+                        .unwrap()
+                        .display()
+                        .to_string()
+                )
             );
         } else {
             let hexify = hexify_string(&chpts.0);

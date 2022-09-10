@@ -6,6 +6,8 @@ use crate::gui_common::*;
 use bluray_support::TitleInfo;
 use vmux_lib::{format_duration, handling::*};
 
+use super::VlcOutput;
+
 pub fn gui_bd_inspection(ui: &mut egui::Ui, asd: &mut GuiGlobalState) {
     let mut do_close = false;
     egui::ScrollArea::vertical()
@@ -22,6 +24,13 @@ pub fn gui_bd_inspection(ui: &mut egui::Ui, asd: &mut GuiGlobalState) {
                     let pp = info.path.clone();
                     let aaa = asd.vlc_output.clone();
 
+                    {
+                        let mut lck = aaa.lock().unwrap();
+                        *lck = Some(VlcOutput {
+                            inspect_bdromid: id.to_owned(),
+                            ..Default::default()
+                        })
+                    }
                     std::thread::spawn(move || {
                         let mut child = std::process::Command::new("vlc")
                             .args([format!("bluray:///{}", pp)])
@@ -45,7 +54,9 @@ pub fn gui_bd_inspection(ui: &mut egui::Ui, asd: &mut GuiGlobalState) {
                                     continue;
                                 }
                                 let mut lck = aaa.lock().unwrap();
-                                lck.push(l);
+                                let lck = lck.as_mut().unwrap();
+                                super::vlc::vlc_process_line(lck, &l);
+                                lck.raw_lines.push(l);
                             }
                         });
                     });

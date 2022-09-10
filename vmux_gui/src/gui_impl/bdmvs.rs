@@ -4,35 +4,145 @@ use egui::*;
 
 use vmux_lib::handling::*;
 
+fn check_is_addable(id: &str, path: &str, config: &Config) -> bool {
+    let criteria_1 = !config.exists_bd(id);
+    let criteria_2 = could_be_bdrom_at_path(path);
+
+    let criteria_3 = {
+        if id.contains(" ") {
+            false
+        } else if id == "" {
+            false
+        } else {
+            true
+        }
+    };
+    let criteria_4 = {
+        let mut a = true;
+
+        for e in &config.blurays {
+            if e.path == path {
+                a = false;
+                break;
+            }
+        }
+
+        a
+    };
+
+    criteria_1 && criteria_2 && criteria_3 && criteria_4
+}
+
+pub fn free_gui_bdmvs(ctx: &egui::Context, asd: &mut GuiGlobalState) {
+    let config = &mut asd.vmux_config;
+
+    let mut close_window = false;
+    if let Some(e) = asd.bdmvs_addmanager.as_mut() {
+        egui::Window::new(format!("Add multi"))
+            .collapsible(false)
+            .resizable(false)
+            // .frame(Frame::window(&ctx.style()).fill(Color32::LIGHT_RED))
+            .show(ctx, |ui| {
+                if e.len() == 0 {
+                    e.push((String::new(), String::new(), false));
+                }
+                if e[e.len() - 1].2 {
+                    e.push((String::new(), String::new(), false));
+                }
+
+                if ui.button("Dummy").clicked() {
+                    e.push((String::new(), String::new(), false));
+                }
+
+                {
+                    let mut config = config.clone();
+                    for i in &mut (*e) {
+                        ui.horizontal(|ui| {
+                            let mut trigger_check = false;
+
+                            if TextEdit::singleline(&mut i.0)
+                                .desired_width(200.0)
+                                .ui(ui)
+                                .changed()
+                            {
+                                trigger_check = true;
+                            }
+                            if TextEdit::singleline(&mut i.1)
+                                .desired_width(600.0)
+                                .ui(ui)
+                                .changed()
+                            {
+                                trigger_check = true;
+                            }
+
+                            if trigger_check {
+                                i.2 = check_is_addable(&i.0, &i.1, &config);
+                            }
+
+                            let btn = if !i.2 {
+                                egui::Label::new("bad")
+                            } else {
+                                egui::Label::new("ok")
+                            };
+                            btn.ui(ui);
+                        });
+                        let _ = config.new_bd(i.0.clone(), &i.1).is_ok();
+                    }
+                }
+                if ui.button("AddAll").clicked() {
+                    e.retain(|i| {
+                        if i.2 {
+                            config.new_bd(i.0.clone(), &i.1).unwrap();
+                        }
+                        !i.2
+                    });
+                }
+                if ui.button("Close").clicked() {
+                    close_window = true;
+                }
+            });
+    }
+    if close_window {
+        asd.bdmvs_addmanager = None;
+    }
+}
 pub fn gui_bdmvs(ui: &mut egui::Ui, asd: &mut GuiGlobalState) {
     egui::ScrollArea::vertical()
         .id_source("scroll_gui_bdmvs")
         .show(ui, |ui| {
+            if ui.button("MultiAdd").clicked() {
+                asd.bdmvs_addmanager = Some(Vec::new());
+            }
             ui.collapsing("Add bluray", |ui| {
                 ui.label("Path");
+
+                let mut trigger_check = false;
                 if ui.text_edit_singleline(&mut asd.tmp_add_path).changed() {
-                    asd.tmp_add_is_bd_addable1 = could_be_bdrom_at_path(&asd.tmp_add_path);
+                    trigger_check = true;
                 }
                 ui.label("InternalId");
                 if ui.text_edit_singleline(&mut asd.tmp_internal_id).changed() {
-                    asd.tmp_add_is_bd_addable2 = !asd.vmux_config.exists_bd(&asd.tmp_internal_id);
+                    trigger_check = true;
                 }
 
-                let nott = !asd.tmp_add_is_bd_addable1 || !asd.tmp_add_is_bd_addable2;
+                if trigger_check {
+                    asd.bdmvs_bd_addable =
+                        check_is_addable(&asd.tmp_internal_id, &asd.tmp_add_path, &asd.vmux_config);
+                }
 
                 let btn = egui::Button::new("Add bd");
-                let btn = if nott {
+                let btn = if !asd.bdmvs_bd_addable {
                     btn.fill(egui::Color32::RED)
                 } else {
                     btn
                 };
 
-                if btn.ui(ui).clicked() && !nott {
+                if btn.ui(ui).clicked() && asd.bdmvs_bd_addable {
                     let path = asd.tmp_add_path.clone();
                     let id = asd.tmp_internal_id.clone();
                     asd.vmux_config.new_bd(id, &path).unwrap();
 
-                    asd.tmp_add_is_bd_addable2 = false;
+                    asd.bdmvs_bd_addable = false;
                 }
             });
             ui.separator();
@@ -158,7 +268,14 @@ pub fn gui_bdmvs(ui: &mut egui::Ui, asd: &mut GuiGlobalState) {
                         });
                     }
 
-                    if ui.button("Inspect").clicked() {
+                    let mut inspect_btn = Button::new("Inspect");
+                    if let Some(e) = asd.inspect_bd.as_ref() {
+                        if e.0 == f.internal_id {
+                            inspect_btn = inspect_btn.fill(Color32::BLUE);
+                        }
+                    }
+
+                    if inspect_btn.ui(ui).clicked() {
                         let disp = BDDisplayInfo::new(
                             &f.path,
                             f,

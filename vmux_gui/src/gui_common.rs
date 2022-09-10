@@ -1,5 +1,8 @@
 use crate::egui;
 use crate::egui_docking;
+use crate::gui_impl::free_gui_bdmvs;
+use crate::gui_impl::vlc_ui;
+use crate::gui_impl::VlcOutput;
 use bluray_support::TitleInfo;
 use egui::{Color32, Frame, Widget};
 use vmux_lib::{bd_cache::BDsCache, handling::*};
@@ -72,8 +75,9 @@ pub struct GuiGlobalState {
     pub tmp_internal_id: String,
     pub tmp_bdmvs_refacor_rename_src: String,
 
-    pub tmp_add_is_bd_addable1: bool,
-    pub tmp_add_is_bd_addable2: bool,
+    pub bdmvs_bd_addable: bool,
+
+    pub bdmvs_addmanager: Option<Vec<(String, String, bool)>>,
 
     pub tmp_add_folder_path: String,
 
@@ -84,7 +88,8 @@ pub struct GuiGlobalState {
     pub can_exit: bool,
     pub is_exiting: bool,
 
-    pub vlc_output: Arc<Mutex<Vec<String>>>,
+    pub vlc_filter_already: bool,
+    pub vlc_output: Arc<Mutex<Option<VlcOutput>>>,
     pub bd_inspect_sortmode: BdInspectSortMode,
 
     pub current_msg_errors: Vec<(usize, String)>,
@@ -134,8 +139,6 @@ impl GuiGlobalState {
             tmp_add_path: Default::default(),
             tmp_internal_id: Default::default(),
             tmp_add_folder_path: Default::default(),
-            tmp_add_is_bd_addable1: false,
-            tmp_add_is_bd_addable2: false,
 
             tmp_folder_entrie: RemuxFolderEntrie::SingularFile(SingularRemuxMatroskaFile::default()),
             selected_folder: None,
@@ -144,13 +147,15 @@ impl GuiGlobalState {
 
             can_exit: false,
             is_exiting: false,
-            vlc_output: Arc::new(Mutex::new(Vec::new())),
+            vlc_output: Arc::new(Mutex::new(None)),
+            vlc_filter_already: true,
 
             bd_inspect_sortmode: BdInspectSortMode::Playlist,
             current_msg_errors: Vec::new(),
             current_throw_err_cnt: 0,
 
             bdmvs_filter: String::new(),
+            bdmvs_bd_addable: false,
             folders_filter: String::new(),
             bdsc: BDsCache::new(),
             ftp: None,
@@ -181,6 +186,8 @@ impl GuiGlobalState {
             import_error: None,
             folder_export_other: false,
             folder_export_yaml: false,
+
+            bdmvs_addmanager: None,
         }
     }
 }
@@ -303,6 +310,9 @@ impl eframe::App for EguiApp {
                 asd
             });
 
+            free_gui_bdmvs(&ctx, glob);
+
+            //TODO: move into free_ function
             if glob.folder_export.is_some()
                 || (glob.folder_export_other && glob.folder_export_string.is_some())
             {
@@ -470,14 +480,10 @@ impl egui_docking::Tab<EguiAppState> for PlaceholderTab {
                 PlaceholderTab::Inspect => crate::gui_impl::gui_bd_inspection(ui, &mut ctx.global),
                 PlaceholderTab::Import => crate::gui_impl::gui_import(ui, &mut ctx.global),
                 PlaceholderTab::Vlc => {
-                    ui.heading("Vlc output");
-                    let mut ls = ctx.global.vlc_output.lock().unwrap();
-
-                    if ui.button("Clear").clicked() {
-                        ls.clear();
-                    }
-                    for ln in ls.iter().rev() {
-                        ui.label(ln);
+                    let ll = ctx.global.vlc_output.clone();
+                    let mut ls = ll.lock().unwrap();
+                    if ls.is_some() {
+                        vlc_ui(ui, ls.as_mut().unwrap(), &mut ctx.global);
                     }
                 }
             });
