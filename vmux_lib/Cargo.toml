@@ -7,7 +7,10 @@ workspace = ".."
 
 [dependencies]
 bluray_support = { path = "../bluray_support" }
-ffms2 = { path = "../ffms2_patched" }
+ffms2 = { git = "https://github.com/sshiroi/ffms2-rs", rev="d574c825c4c0eb9c6516d4884b47f7316c23e2e2" }
+#if you have dolby vision compile problems use this rev cf3283ac7bd35eca16ad27840758e67cdb3ba072
+#d574c825c4c0eb9c6516d4884b47f7316c23e2e2 audio fix only
+#cf3283ac7bd35eca16ad27840758e67cdb3ba072 audio fix + dv fix
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"

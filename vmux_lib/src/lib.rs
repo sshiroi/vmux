@@ -42,34 +42,8 @@ pub mod config;
 pub use serde_json;
 //pub use rmp_serde;
 
-#[derive(Copy, Clone)]
-pub struct ClipRecut {
-    pub offset: u64,
-    pub duration: Option<u64>,
-}
-
-impl ClipRecut {
-    pub fn offset_duration(offset: u64, duration: u64) -> Self {
-        Self {
-            offset,
-            duration: Some(duration),
-        }
-    }
-    pub fn offset_end(offset: u64) -> Self {
-        Self {
-            offset,
-            duration: None,
-        }
-    }
-}
-impl Default for ClipRecut {
-    fn default() -> Self {
-        Self {
-            offset: 0,
-            duration: None,
-        }
-    }
-}
+pub mod clip_recut;
+pub use clip_recut::*;
 
 //TODO: move format duration here
 pub fn align_up(a: u64, align: u64) -> u64 {

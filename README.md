@@ -88,7 +88,6 @@ and edl seems to always do a seek when opening the file, there are some m2ts fil
 ## Building (general)
 - download ipagp.ttf (example from https://github.com/hyoshiok/ttf-ipafont/blob/master/ipagp.ttf)
 - make sure you have ffms 2.40 installed
-- setup the `ffms2_patched` folder using the pull_ffms2_patched.sh
 - build the project like any other rust project with all the required dependencies installed ( ffms2, fuse, libbluray, (vlc, mpv) )
 - You can use the provided `shell.nix` under nixos for all required dependecys (+rustup )
 
@@ -98,8 +97,6 @@ and edl seems to always do a seek when opening the file, there are some m2ts fil
 - download ffms2
 - download libbluray and dependencys 
 - download mpv and vlc
-- download https://github.com/rust-av/ffms2-rs/archive/96fcd54feeca37f8493276a95c4850ea81896905.tar.gz and unpack to ffms2_patched
-- Apply patch by hand or download git and use the `git apply ../ffms2.patch` to apply to ffms2_patched
 - add mpv and vlc to PATH
 - Add env variables FFMS_INCLUDE_DIR and FFMS_LIB_DIR
 - Add env variable LIBBLURAY_INCLUDE_DIR pointing to libbluray include
@@ -126,7 +123,6 @@ and edl seems to always do a seek when opening the file, there are some m2ts fil
 - wsl2 only: Install Ubuntu 22.04 from windows store, older ubuntu version dont have new ffms2
 - apt install curl
 - install rust from rustup.rs
-- sh pull_ffms2_patched.sh
 - `sudo apt install xorg gcc mpv vlc fuse libfuse-dev libclang-dev libbluray-dev libffms2-dev libbz2-dev`
 - cargo build --release
 - wsl2: If X doesn't work use VcXsrv and https://stackoverflow.com/questions/61110603/how-to-set-up-working-x11-forwarding-on-wsl2?answertab=trending#tab-top
@@ -135,8 +131,7 @@ and edl seems to always do a seek when opening the file, there are some m2ts fil
 
 ## ffms2-rs build fails with dolby something
 - Apparently they added fields in a struct, made no new release ubuntu has the new(git) version but nixos does not
-- manually apply the ffms2_newest_version.patch
-- `cd ffms2_patched/ && patch -p1  < ../ffms2_newest_version.patch && cd ..`
+- Go to vmux_lib/Cargo.toml and change to commit hash to include the dv fix
 
 
 ## Known bugs (fuse and ftp only)
@@ -149,7 +144,7 @@ and edl seems to always do a seek when opening the file, there are some m2ts fil
 - wav and y4m crash at end of file ( unmaintained code should just throw that out)
 
 ## Known bugs EDL 
-- (none yet) altough haven't watch alot with this mode yet
+- none yet
 
 
 ## Features I still want to implement eventually
