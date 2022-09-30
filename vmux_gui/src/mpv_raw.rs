@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use bluray_support::TitleInfo;
 use tempfile::TempDir;
-use vmux_lib::bd_cache::BDsCache;
+use vmux_lib::bd_cache::RGBDsCache;
 use vmux_lib::bd_cache::TitleInfoProvider;
 use vmux_lib::gen_chaps_for_title_ti;
 use vmux_lib::handling::Bdrom;
@@ -175,7 +175,7 @@ fn get_clip_path(clip_id: &str, blr: &Bdrom) -> PathBuf {
 
 pub fn handle(
     cfg: &Config,
-    bdbd: &mut BDsCache,
+    bdbd: &mut RGBDsCache,
     fl: &SingularRemuxMatroskaFile,
     prefix: &str,
     open_mpv: bool,
@@ -312,7 +312,7 @@ pub fn handle(
 pub(crate) fn export_folder_as_ebl(
     cfg: &Config,
     f: &RemuxFolder,
-    bdbd: &mut BDsCache,
+    bdbd: &mut RGBDsCache,
     edl_fix_offset: f64,
     chapter_seperate: bool,
 ) {
@@ -394,7 +394,7 @@ pub(crate) fn export_folder_as_ebl(
     }
 }
 
-pub(crate) fn sort_and_flatten(cfg: &Config, f: &mut RemuxFolder, bdbd: &mut BDsCache) {
+pub(crate) fn sort_and_flatten(cfg: &Config, f: &mut RemuxFolder, bdbd: &mut RGBDsCache) {
     let fltn = flatten_remux_folder_entries(cfg, &f.entries, bdbd);
     f.entries = fltn
         .into_iter()

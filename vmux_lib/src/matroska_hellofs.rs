@@ -3,7 +3,7 @@ use crate::{
     bd_stream_av_cache::*, fs::ino_allocator::InoAllocator, matroska_backed::MatroskaBacked,
 };
 
-use crate::bd_cache::{BDsCache, TitleInfoProvider};
+use crate::bd_cache::{AVBDsCache, TitleInfoProvider};
 use crate::handling::*;
 use crate::matroska::*;
 use crate::*;
@@ -33,10 +33,10 @@ pub fn weed_out_inexsitance(cfg: &Config, fldr: &str, e: &mut Vec<RemuxFolderEnt
         }
     });
 }
-pub fn flatten_remux_folder_entries(
+pub fn flatten_remux_folder_entries<T>(
     cfg: &Config,
     e: &[RemuxFolderEntrie],
-    bdbd: &mut BDsCache,
+    bdbd: &mut crate::bd_cache::IBDsCache<T>,
 ) -> Vec<SingularRemuxMatroskaFile> {
     let mut sglr = Vec::new();
 
@@ -95,7 +95,7 @@ pub fn prepare_check_entries(
     cfg: &Config,
     fldr: &str,
     e: &Vec<RemuxFolderEntrie>,
-    bdbd: &mut BDsCache,
+    bdbd: &mut AVBDsCache,
 ) -> Vec<SingularRemuxMatroskaFile> {
     let mut ee = e.clone();
     weed_out_inexsitance(&cfg, fldr, &mut ee);
@@ -111,7 +111,7 @@ pub fn mkvs_from_remux_folder(
 ) -> HelloFSFolderBuilder {
     let mut builder = builder;
 
-    let mut bdbd = BDsCache::new();
+    let mut bdbd = AVBDsCache::new();
     let ee = prepare_check_entries(&cfg, &folder.name, &folder.entries, &mut bdbd);
     let mut bdbd = cache_all_streams(&cfg, bdbd, &ee);
 
@@ -121,7 +121,11 @@ pub fn mkvs_from_remux_folder(
     builder
 }
 
-fn cache_all_streams(cfg: &Config, bdbd: BDsCache, asd: &[SingularRemuxMatroskaFile]) -> BDsCache {
+fn cache_all_streams(
+    cfg: &Config,
+    bdbd: AVBDsCache,
+    asd: &[SingularRemuxMatroskaFile],
+) -> AVBDsCache {
     let bdbd = Arc::new(Mutex::new(bdbd));
 
     let mut thrd_handls = Vec::new();
@@ -194,7 +198,7 @@ pub fn build_singular_remux_file(
     prefix: &str,
     e: &SingularRemuxMatroskaFile,
     cfg: &Config,
-    bdbd: &mut BDsCache,
+    bdbd: &mut AVBDsCache,
 ) -> HelloFSFolderBuilder {
     let backing = build_singular_matroska_backed(e, cfg, bdbd);
     let matroksksks = build_singular_remux_file_name(prefix, e);
@@ -250,7 +254,7 @@ fn matroska_chapters_from_title_ex(
 pub fn build_singular_matroska_backed(
     e: &SingularRemuxMatroskaFile,
     cfg: &Config,
-    bdbd: &mut BDsCache,
+    bdbd: &mut AVBDsCache,
 ) -> MatroskaBacked {
     println!("singular");
     let bdrom = cfg.bluray(&e.src).unwrap();

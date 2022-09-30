@@ -8,6 +8,12 @@ use vmux_lib::{format_duration, handling::*};
 
 use super::VlcOutput;
 
+#[derive(Debug, PartialEq)]
+pub enum BdInspectSortMode {
+    Title,
+    Playlist,
+}
+
 pub fn gui_bd_inspection(ui: &mut egui::Ui, asd: &mut GuiGlobalState) {
     let mut do_close = false;
     egui::ScrollArea::vertical()

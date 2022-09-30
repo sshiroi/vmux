@@ -7,6 +7,7 @@ use gui_common::*;
 //use vmux_lib::{handling::{Config, BlurayExtract, NewBlurayExtract, PlaylistId, PlaylistClipIndex, TitleId}, bd_cache::BDsCache};
 use vmux_lib::handling::Config;
 mod egui_docking;
+mod global_state;
 mod gui_impl;
 mod mpv_raw;
 

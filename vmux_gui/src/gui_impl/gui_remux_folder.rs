@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::egui;
-use vmux_lib::bd_cache::{BDsCache, TitleInfoProvider};
+use vmux_lib::bd_cache::{RGBDsCache, TitleInfoProvider};
 use vmux_lib::handling::*;
 
 fn add_button(ui: &mut egui::Ui, folder: &mut RemuxFolder, zz: &mut RemuxFolderEntrie) {
@@ -33,7 +33,7 @@ fn add_button(ui: &mut egui::Ui, folder: &mut RemuxFolder, zz: &mut RemuxFolderE
     }
 }
 
-fn find_errors(cfg: &Config, bdbd: &mut BDsCache, iiiii: usize) -> Vec<(usize, String)> {
+fn find_errors(cfg: &Config, bdbd: &mut RGBDsCache, iiiii: usize) -> Vec<(usize, String)> {
     let mut errors = Vec::new();
     for f in cfg.folders[iiiii].entries.iter().enumerate() {
         let bdrom = cfg.bluray(f.1.src());
@@ -41,7 +41,10 @@ fn find_errors(cfg: &Config, bdbd: &mut BDsCache, iiiii: usize) -> Vec<(usize, S
             errors.push((f.0, "Src does not exists".to_owned()));
             continue;
         }
-        let src = bdbd.get_full(bdrom.unwrap(), &cfg.bd_index_dir);
+        //TODO: check if still works
+
+        let src = bdbd.get_tis(bdrom.unwrap());
+        //let src = bdbd.get_full(bdrom.unwrap(), &cfg.bd_index_dir);
 
         if src.is_none() {
             errors.push((
@@ -51,7 +54,8 @@ fn find_errors(cfg: &Config, bdbd: &mut BDsCache, iiiii: usize) -> Vec<(usize, S
             continue;
         }
         let src = src.unwrap();
-        let cbd = src.lock().unwrap();
+        //let cbd = src.lock().unwrap();
+        let cbd = src;
         let pipp = match f.1 {
             RemuxFolderEntrie::SingularFile(f) => match &f.extract {
                 BlurayExtract::PlaylistFull(t) => *t,

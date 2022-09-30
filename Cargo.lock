@@ -1043,7 +1043,8 @@ dependencies = [
 [[package]]
 name = "glutin"
 version = "0.28.0"
-source = "git+https://github.com/Ar37-rs/glutin?rev=1f0f3104fa45e48cfd4eb0d8379d792f4e889b26#1f0f3104fa45e48cfd4eb0d8379d792f4e889b26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00ea9dbe544bc8a657c4c4a798c2d16cd01b549820e47657297549d28371f6d2"
 dependencies = [
  "android_glue",
  "cgl",
@@ -1068,8 +1069,9 @@ dependencies = [
 
 [[package]]
 name = "glutin_egl_sys"
-version = "0.1.5"
-source = "git+https://github.com/Ar37-rs/glutin?rev=1f0f3104fa45e48cfd4eb0d8379d792f4e889b26#1f0f3104fa45e48cfd4eb0d8379d792f4e889b26"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68900f84b471f31ea1d1355567eb865a2cf446294f06cef8d653ed7bcf5f013d"
 dependencies = [
  "gl_generator",
  "winapi",
@@ -1078,12 +1080,14 @@ dependencies = [
 [[package]]
 name = "glutin_emscripten_sys"
 version = "0.1.1"
-source = "git+https://github.com/Ar37-rs/glutin?rev=1f0f3104fa45e48cfd4eb0d8379d792f4e889b26#1f0f3104fa45e48cfd4eb0d8379d792f4e889b26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80de4146df76e8a6c32b03007bc764ff3249dcaeb4f675d68a06caf1bac363f1"
 
 [[package]]
 name = "glutin_gles2_sys"
 version = "0.1.5"
-source = "git+https://github.com/Ar37-rs/glutin?rev=1f0f3104fa45e48cfd4eb0d8379d792f4e889b26#1f0f3104fa45e48cfd4eb0d8379d792f4e889b26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8094e708b730a7c8a1954f4f8a31880af00eb8a1c5b5bf85d28a0a3c6d69103"
 dependencies = [
  "gl_generator",
  "objc",
@@ -1091,8 +1095,9 @@ dependencies = [
 
 [[package]]
 name = "glutin_glx_sys"
-version = "0.1.7"
-source = "git+https://github.com/Ar37-rs/glutin?rev=1f0f3104fa45e48cfd4eb0d8379d792f4e889b26#1f0f3104fa45e48cfd4eb0d8379d792f4e889b26"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d93d0575865098580c5b3a423188cd959419912ea60b1e48e8b3b526f6d02468"
 dependencies = [
  "gl_generator",
  "x11-dl",
@@ -1101,7 +1106,8 @@ dependencies = [
 [[package]]
 name = "glutin_wgl_sys"
 version = "0.1.5"
-source = "git+https://github.com/Ar37-rs/glutin?rev=1f0f3104fa45e48cfd4eb0d8379d792f4e889b26#1f0f3104fa45e48cfd4eb0d8379d792f4e889b26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3da5951a1569dbab865c6f2a863efafff193a93caf05538d193e9e3816d21696"
 dependencies = [
  "gl_generator",
 ]
@@ -2318,22 +2324,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
-name = "vmux_ftp"
-version = "0.1.0"
-dependencies = [
- "bluray_support",
- "vmux_lib",
-]
-
-[[package]]
 name = "vmux_gui"
 version = "0.1.0"
 dependencies = [
  "bluray_support",
  "eframe",
  "tempfile",
- "vmux_ftp",
  "vmux_lib",
+ "walkdir",
 ]
 
 [[package]]

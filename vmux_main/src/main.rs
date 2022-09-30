@@ -11,7 +11,7 @@ use crate::fuse_fs::HelloFsRuntimeBD;
 use fs::emu_folder_builder::HelloFSFolderBuilder;
 use fs::ino_allocator::InoAllocator;
 
-use vmux_lib::bd_cache::BDsCache;
+use vmux_lib::bd_cache::AVBDsCache;
 use vmux_lib::handling::Config;
 use vmux_lib::*;
 
@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut builder = HelloFSFolderBuilder::new();
     let mut ino = InoAllocator::new();
-    let mut bdbd = BDsCache::new();
+    let mut bdbd = AVBDsCache::new();
 
     builder = hellofs_build_from_config(&cfg, &mut ino, &mut bdbd, builder);
 

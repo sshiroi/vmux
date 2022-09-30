@@ -1,8 +1,53 @@
+use std::path::PathBuf;
+
 use crate::egui;
 use crate::gui_common::*;
+use bluray_support::TitleInfo;
 use egui::*;
 
+use vmux_lib::bd_cache::RGBDsCache;
 use vmux_lib::handling::*;
+
+pub struct BDDisplayInfo {
+    // bd: bluray_support::BD,
+    pub legacy_title_list: Vec<TitleInfo>,
+
+    pub path: String,
+
+    //                  s   path     indexed
+    pub strms: Vec<(String, PathBuf, bool)>,
+}
+
+impl BDDisplayInfo {
+    pub fn new(
+        path: &str,
+        bdrom: &Bdrom,
+        bdbd: &mut RGBDsCache,
+        bd_index_dir: &str,
+    ) -> Option<BDDisplayInfo> {
+        //let bd = bluray_support::BD::open(path);
+        let bd = bdbd.get_tis(bdrom);
+        let tis = match bd {
+            Some(e) => e,
+            None => return None,
+        };
+
+        let mut strms = Vec::new();
+        for (s, _) in bdrom.find_streams() {
+            let indexed = bdrom.index_for_stream(&s, bd_index_dir).exists();
+            let strm_file = bdrom.find_stream_file(&s);
+
+            strms.push((s, strm_file, indexed));
+        }
+
+        Some(BDDisplayInfo {
+            //bd,
+            legacy_title_list: tis,
+            path: path.to_string(),
+            strms,
+        })
+    }
+}
 
 fn check_is_addable(id: &str, path: &str, config: &Config) -> bool {
     let criteria_1 = !config.exists_bd(id);
@@ -50,10 +95,55 @@ pub fn free_gui_bdmvs(ctx: &egui::Context, asd: &mut GuiGlobalState) {
                     e.push((String::new(), String::new(), false));
                 }
 
-                if ui.button("Dummy").clicked() {
+                ui.heading("Autofind");
+                ui.horizontal(|ui| {
+                    ui.text_edit_singleline(&mut asd.bdmvs_addmanager_tmp_srch);
+                    if ui.button("Search").clicked() {
+                        let mut to_addd = Vec::new();
+
+                        let pth = PathBuf::from(&asd.bdmvs_addmanager_tmp_srch);
+                        for xe in walkdir::WalkDir::new(pth)
+                            .into_iter()
+                            .filter_map(|e| e.ok())
+                        {
+                            if xe.file_name() == "00000.m2ts" {
+                                let pth = xe.path().parent().unwrap().parent().unwrap();
+                                let stro = pth.to_str().unwrap();
+                                if !pth.join("PLAYLIST").is_dir() {
+                                    continue;
+                                }
+                                let penn = {
+                                    let mut asda = false;
+                                    for ent in e.iter() {
+                                        if ent.1 == stro {
+                                            asda = true;
+                                            break;
+                                        }
+                                    }
+                                    asda
+                                };
+                                if !penn {
+                                    to_addd.push({
+                                        let a = pth.parent().unwrap();
+                                        a.to_str().unwrap().to_string()
+                                    });
+                                }
+                            }
+                        }
+                        to_addd.sort();
+                        for a in to_addd {
+                            e.push((String::new(), a, false));
+                        }
+                    }
+                });
+
+                ui.separator();
+
+                if ui.button("Add Empty entry").clicked() {
                     e.push((String::new(), String::new(), false));
                 }
-
+                ui.separator();
+                ui.heading("Entries to add");
                 {
                     let mut config = config.clone();
                     for i in &mut (*e) {
@@ -68,7 +158,7 @@ pub fn free_gui_bdmvs(ctx: &egui::Context, asd: &mut GuiGlobalState) {
                                 trigger_check = true;
                             }
                             if TextEdit::singleline(&mut i.1)
-                                .desired_width(600.0)
+                                .desired_width(900.0)
                                 .ui(ui)
                                 .changed()
                             {
@@ -89,17 +179,20 @@ pub fn free_gui_bdmvs(ctx: &egui::Context, asd: &mut GuiGlobalState) {
                         let _ = config.new_bd(i.0.clone(), &i.1).is_ok();
                     }
                 }
-                if ui.button("AddAll").clicked() {
-                    e.retain(|i| {
-                        if i.2 {
-                            config.new_bd(i.0.clone(), &i.1).unwrap();
-                        }
-                        !i.2
-                    });
-                }
-                if ui.button("Close").clicked() {
-                    close_window = true;
-                }
+                ui.separator();
+                ui.horizontal(|ui| {
+                    if ui.button("AddAll").clicked() {
+                        e.retain(|i| {
+                            if i.2 {
+                                config.new_bd(i.0.clone(), &i.1).unwrap();
+                            }
+                            !i.2
+                        });
+                    }
+                    if ui.button("Close").clicked() {
+                        close_window = true;
+                    }
+                });
             });
     }
     if close_window {

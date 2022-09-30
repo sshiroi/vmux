@@ -1,8 +1,8 @@
 use std::io::*;
 use std::net::{TcpListener, TcpStream};
 
-use vmux_lib::{
-    bd_cache::BDsCache, fs::HelloFSFile, handling::Config,
+use crate::{
+    bd_cache::AVBDsCache, fs::HelloFSFile, handling::Config,
     matroska_hellofs::build_singular_matroska_backed,
 };
 
@@ -14,15 +14,15 @@ pub enum Comd {
     GetFileData(String, u64, u64, TcpStream, mpsc::Sender<(u64, TcpStream)>),
 }
 
-pub fn build_fls(bdbd: &mut BDsCache, cfg: &Config) -> Vec<HelloFsEntry> {
-    use vmux_lib::*;
+pub fn build_fls(bdbd: &mut AVBDsCache, cfg: &Config) -> Vec<HelloFsEntry> {
+    use crate::*;
 
-    let mut ino = vmux_lib::fs::InoAllocator::new();
-    let mut builder = vmux_lib::fs::HelloFSFolderBuilder::new();
+    let mut ino = fs::InoAllocator::new();
+    let mut builder = fs::HelloFSFolderBuilder::new();
 
     init_ffms2();
 
-    builder = vmux_lib::fs::hellofs_build_from_config(cfg, &mut ino, bdbd, builder);
+    builder = fs::hellofs_build_from_config(cfg, &mut ino, bdbd, builder);
 
     builder.build()
 }
@@ -74,13 +74,13 @@ fn find_entry_by_path_mut<'a>(pth: &str, a: &'a mut [HelloFsEntry]) -> Option<&'
     }
     return None;
 }
-use vmux_lib::fs::EmuFile;
+use crate::fs::EmuFile;
 
 pub fn spawn_media_processing(fls: Vec<HelloFsEntry>, cfg: Config) -> mpsc::Sender<Comd> {
     let (tx, rx) = mpsc::channel();
     std::thread::spawn(move || {
         let mut fls = fls;
-        let mut bdbd = BDsCache::new();
+        let mut bdbd = AVBDsCache::new();
         loop {
             match rx.recv() {
                 Ok(e) => {
@@ -90,9 +90,9 @@ pub fn spawn_media_processing(fls: Vec<HelloFsEntry>, cfg: Config) -> mpsc::Send
                             let entry = find_entry_by_path_mut(&file, &mut fls);
                             if let Some(e) = entry {
                                 match &mut e.backed {
-                                    vmux_lib::fs::EmuFile::WavFile(_) => todo!(),
-                                    vmux_lib::fs::EmuFile::Y4MFile(_) => todo!(),
-                                    vmux_lib::fs::EmuFile::Matroska(mm) => {
+                                    crate::fs::EmuFile::WavFile(_) => todo!(),
+                                    crate::fs::EmuFile::Y4MFile(_) => todo!(),
+                                    crate::fs::EmuFile::Matroska(mm) => {
                                         //   let mut buf = vec![0u8; max_size_want as usize];
                                         //mm.vread(offset,max_size_want,&mut buf);
 
@@ -131,7 +131,7 @@ pub fn spawn_media_processing(fls: Vec<HelloFsEntry>, cfg: Config) -> mpsc::Send
                                         txt.send((wrttt, proxy.strm)).unwrap();
                                         continue;
                                     }
-                                    vmux_lib::fs::EmuFile::UnloadedMatroska(unloaded) => {
+                                    crate::fs::EmuFile::UnloadedMatroska(unloaded) => {
                                         println!("Buildin gmatroska");
                                         let mut mm = build_singular_matroska_backed(
                                             unloaded, &cfg, &mut bdbd,
@@ -143,7 +143,7 @@ pub fn spawn_media_processing(fls: Vec<HelloFsEntry>, cfg: Config) -> mpsc::Send
                                         e.size = mm.total_size;
                                         e.backed = EmuFile::Matroska(mm);
                                     }
-                                    vmux_lib::fs::EmuFile::TxtFile(_) => todo!(),
+                                    crate::fs::EmuFile::TxtFile(_) => todo!(),
                                 };
                             } else {
                                 println!("Invalid file");
@@ -168,7 +168,7 @@ fn send_stra(num: u64, data: &str) -> Vec<u8> {
     format!("{} {}\r\n", num, data).as_bytes().to_vec()
 }
 
-use vmux_lib::fs::HelloFsEntry;
+use crate::fs::HelloFsEntry;
 
 fn hanle_con(mut ftp_main_connection: TcpStream, asd: mpsc::Sender<Comd>) {
     println!("Got connection");

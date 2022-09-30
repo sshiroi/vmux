@@ -157,6 +157,12 @@ impl Config {
                 simple_error::bail!("fodler already exists");
             }
         }
+        if name.trim().len() == 0 {
+            simple_error::bail!("invalid foldername");
+        }
+        if name.trim().len() != name.len() {
+            simple_error::bail!("Foldername would couse problems on windows (trailing whitespace)");
+        }
         self.folders.push(RemuxFolder {
             name: name.to_owned(),
             file_prefix: format!("{} ", name),

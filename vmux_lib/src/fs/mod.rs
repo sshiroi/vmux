@@ -4,13 +4,13 @@ pub mod ino_allocator;
 pub use emu_folder_builder::*;
 pub use ino_allocator::*;
 
-use crate::bd_cache::BDsCache;
+use crate::bd_cache::AVBDsCache;
 use crate::handling::Config;
 
 pub fn hellofs_build_from_config(
     cfg: &Config,
     ino: &mut InoAllocator,
-    bdbd: &mut BDsCache,
+    bdbd: &mut AVBDsCache,
     builder: HelloFSFolderBuilder,
 ) -> HelloFSFolderBuilder {
     let mut main_builder = builder;

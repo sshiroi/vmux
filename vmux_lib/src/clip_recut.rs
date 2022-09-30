@@ -1,4 +1,3 @@
-
 #[derive(Copy, Clone)]
 pub struct ClipRecut {
     pub offset: u64,

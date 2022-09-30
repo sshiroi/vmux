@@ -1,12 +1,10 @@
 [workspace]
-members = [ "vmux_main", "vmux_gui", "vmux_lib", "bluray_support", "vmux_ftp" ]
+members = [ "vmux_main", "vmux_gui", "vmux_lib", "bluray_support" ]
 
-[profile.dev.package.vmux_ftp]
-opt-level = 2
-overflow-checks = false
 [profile.dev.package.vmux_lib]
 opt-level = 2
 overflow-checks = false
 
-[patch.crates-io]
-glutin = { git = "https://github.com/Ar37-rs/glutin", rev="1f0f3104fa45e48cfd4eb0d8379d792f4e889b26" }
+# cant fetch this anymore this this might break wsl though
+#[patch.crates-io]
+#glutin = { git = "https://github.com/Ar37-rs/glutin", rev="1f0f3104fa45e48cfd4eb0d8379d792f4e889b26" }

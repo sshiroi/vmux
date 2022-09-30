@@ -107,9 +107,10 @@ pub fn gui_ftp(ui: &mut egui::Ui, asd: &mut GuiGlobalState) {
             } else {
                 number_widge(ui, &mut asd.vmux_config.ftp_port, "port");
                 if ui.button("Start").clicked() {
-                    let fls = libvmuxftp::build_fls(&mut asd.bdsc, &asd.vmux_config);
+                    let mut avbd = vmux_lib::bd_cache::AVBDsCache::new();
+                    let fls = vmux_lib::ftp::build_fls(&mut avbd, &asd.vmux_config);
                     let flllll = build_filelist_from_fls(&fls);
-                    let stopy = libvmuxftp::spawn_combined(
+                    let stopy = vmux_lib::ftp::spawn_combined(
                         asd.vmux_config.clone(),
                         asd.vmux_config.ftp_port,
                         fls,

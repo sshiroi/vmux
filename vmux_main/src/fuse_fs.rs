@@ -8,7 +8,7 @@ use std::time::{Duration, UNIX_EPOCH};
 use vmux_lib::handling::Config;
 
 use crate::y4m_wav_backed_file::{backed_wav_read, backed_y4m_read};
-use vmux_lib::bd_cache::BDsCache;
+use vmux_lib::bd_cache::AVBDsCache;
 use vmux_lib::fs::ino_allocator::InoAllocator;
 use vmux_lib::fs::{emu_folder_builder::*, hellofs_build_from_config};
 
@@ -70,7 +70,7 @@ fn dir_attr(inoy: u64) -> FileAttr {
 
 pub struct HelloFsRuntimeBD {
     pub cfg: Config,
-    pub bdbd: BDsCache,
+    pub bdbd: AVBDsCache,
 }
 
 pub struct HelloFS {
@@ -115,7 +115,7 @@ impl HelloFS {
             handle_file_dealloc(&mut self.ino, f);
         }
         self.files.clear();
-        self.runtime.bdbd = BDsCache::new();
+        self.runtime.bdbd = AVBDsCache::new();
 
         vmux_lib::deint_ffms2();
         vmux_lib::init_ffms2();
