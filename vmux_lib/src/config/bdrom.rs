@@ -90,10 +90,14 @@ impl Bdrom {
             let f = f.unwrap();
             let p = f.path();
 
-            if p.extension().unwrap() == "m2ts" {
-                let lflf = p.file_stem().unwrap();
+            let ext = p.extension();
 
-                ret.push((lflf.to_str().unwrap().to_string(), p.clone()));
+            if let Some(ext) = ext {
+                if ext == "m2ts" {
+                    let lflf = p.file_stem().unwrap();
+
+                    ret.push((lflf.to_str().unwrap().to_string(), p.clone()));
+                }
             }
         }
         ret

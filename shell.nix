@@ -20,7 +20,7 @@ pkgs.mkShell {
   #'';
 
   shellHook = ''export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.lib.makeLibraryPath [
-    pkgs.alsaLib
+    pkgs.alsa-lib
     pkgs.xorg.libX11
     pkgs.xorg.libXcursor
     pkgs.xorg.libXrandr
